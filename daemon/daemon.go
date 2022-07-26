@@ -20,7 +20,8 @@ func Tick(c types.Config, pkg types.EdgewarePackage) {
 	HibernationLoop:
 	for {
 		hibernationCountdown :=
-			rand.Intn(int(c.HibernateMaxWait) - int(c.HibernateMinWait) + 1) + int(c.HibernateMinWait)
+			rand.Intn(int(c.HibernateMaxWait) - int(c.HibernateMinWait) + 1) +
+				int(c.HibernateMinWait)
 
 		for !inHibernation {
 			tickCounter++
@@ -91,7 +92,9 @@ func MakePrompt(text string) {
 			g.Dummy(g.Auto/3, 1),
 			g.Label(text).Wrapped(true),
 			g.Dummy(1, 20),
-			g.InputTextMultiline(&input).Size(g.Auto, g.Auto).OnChange(func() { if text == input { wnd.Close(); showingPrompt = false }}),
+			g.InputTextMultiline(&input).Size(g.Auto, g.Auto).OnChange(func() {
+				if text == input { wnd.Close(); showingPrompt = false}
+			}),
 		)
 	})
 }

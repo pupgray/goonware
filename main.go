@@ -15,9 +15,13 @@ func main() {
 
 	if *enterDaemon {
 		c, err := configurator.NewOrLoadConfig()
-		if err != nil { panic(err) }
+		if err != nil {
+			panic(err)
+		}
 		pkg, err := types.LoadEdgewarePackage(c.LoadedPackage, c.WorkingDirectory)
-		if err != nil { panic(err) }
+		if err != nil {
+			panic(err)
+		}
 
 		daemon.Tick(c, pkg)
 	} else {

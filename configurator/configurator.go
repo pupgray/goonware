@@ -14,7 +14,7 @@ func ConfiguratorUI() error {
 	wnd.Run(func() {
 		g.SingleWindow().Layout(
 			g.TabBar().TabItems(
-				g.TabItem("General").Layout(GeneralTab(c)...),
+				g.TabItem("General").Layout(GeneralTab(&c)...),
 				g.TabItem("About").Layout(AboutTab()...),
 			),
 		)

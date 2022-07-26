@@ -108,11 +108,14 @@ func LoadEdgewarePackage(packagePath, packageExtractDirectory string) (EdgewareP
 		} else {
 			dir := path.Dir(filePath)
 
-			if strings.HasSuffix(dir, "img") && (strings.HasSuffix(filePath, "png") || strings.HasSuffix(filePath, "jpg")) {
+			if strings.HasSuffix(dir, "img") && (strings.HasSuffix(filePath, "png") ||
+					strings.HasSuffix(filePath, "jpg")) {
 				pkg.ImageFiles = append(pkg.ImageFiles, filePath)
-			} else if strings.HasSuffix(dir, "vid") && (strings.HasSuffix(filePath, "mp4") || strings.HasSuffix(filePath, "webm")) {
+			} else if strings.HasSuffix(dir, "vid") && (strings.HasSuffix(filePath, "mp4") ||
+					strings.HasSuffix(filePath, "webm")) {
 				pkg.VideoFiles = append(pkg.VideoFiles, filePath)
-			} else if strings.HasSuffix(dir, "aud") && (strings.HasSuffix(filePath, "wav") || strings.HasSuffix(filePath, "mp3")) {
+			} else if strings.HasSuffix(dir, "aud") && (strings.HasSuffix(filePath, "wav") ||
+					strings.HasSuffix(filePath, "mp3")) {
 				pkg.AudioFiles = append(pkg.AudioFiles, filePath)
 			} else if strings.HasSuffix(dir, "subliminals") && strings.HasSuffix(filePath, "gif") {
 				pkg.SubliminalFiles = append(pkg.SubliminalFiles, filePath)

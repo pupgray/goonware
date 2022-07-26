@@ -69,8 +69,8 @@ func NewOrLoadConfig() (types.Config, error) {
 	return LoadConfig()
 }
 
-func SaveConfig(c types.Config) error {
-	structBytes, err := json.Marshal(c)
+func SaveConfig(c *types.Config) error {
+	structBytes, err := json.Marshal(*c)
 	if err != nil {
 		return err
 	}
