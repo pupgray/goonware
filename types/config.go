@@ -4,9 +4,14 @@ type Config struct {
 	WorkingDirectory string
 	// Mode
 	Mode int32 
-	HibernateMinWait int32 
-	HibernateMaxWait int32 
+	HibernateMinWaitMinutes int32 
+	HibernateMaxWaitMinutes int32 
 	HibernateActivityLength int32 
+	LoadedPackage     string
+	LoadedPackageData *EdgewarePackage
+	StartOnBoot bool 
+	RunOnExit   bool
+
 	// Annoyances
 	Annoyances   bool  
 	TimerDelay   int32
@@ -33,10 +38,14 @@ type Config struct {
 	AnnoyanceAudio   bool 
 	AudioChance      int32 
 	AudioVolume      int32 
-	// Package
-	LoadedPackage     string
-	LoadedPackageData *EdgewarePackage
-	// Other
-	StartOnBoot bool 
-	RunOnExit   bool
+
+	// Drive Filler
+	DriveFiller bool
+	DriveFillerDelay int32
+	DriveFillerBase string
+	DriveFillerTags []string
+	DriveFillerImageSource int32
+	DriveFillerImageUseTags bool
+	DriveFillerDownloadMinimumScoreToggle bool
+	DriveFillerDownloadMinimumScoreThreshold int32
 }

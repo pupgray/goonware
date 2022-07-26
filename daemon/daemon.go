@@ -20,8 +20,8 @@ func Tick(c types.Config, pkg types.EdgewarePackage) {
 	HibernationLoop:
 	for {
 		hibernationCountdown :=
-			rand.Intn(int(c.HibernateMaxWait) - int(c.HibernateMinWait) + 1) +
-				int(c.HibernateMinWait)
+			rand.Intn(int(c.HibernateMaxWaitMinutes) - int(c.HibernateMinWaitMinutes) + 1) +
+				int(c.HibernateMinWaitMinutes)
 
 		for !inHibernation {
 			tickCounter++
