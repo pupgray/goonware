@@ -10,8 +10,6 @@ import (
 	"github.com/sqweek/dialog"
 )
 
-var c types.Config = NewOrLoadConfig()
-
 func FormatTimeSlider(value int32) string {
 	if value < 60 {
 		if value == 1 {
@@ -48,11 +46,11 @@ func ConditionOrNothing(condition bool, layout g.Layout) g.Layout {
 	return g.Layout{}
 }
 
-func GeneralTab() []g.Widget {
+func GeneralTab(c types.Config) []g.Widget {
 	largerFont := g.GetDefaultFonts()[0].SetSize(20)
 
 	return []g.Widget{
-		g.Button("Save and exit").OnClick(SaveAndExit),
+		g.Button("Save and exit").OnClick(func() { SaveAndExit(c) }),
 		g.Separator(),
 
 		g.Label("Mode").Font(largerFont),
@@ -200,7 +198,7 @@ func GeneralTab() []g.Widget {
 			g.Layout{ g.Label("Currently loaded package is " + c.LoadedPackage) },
 			g.Layout{ g.Label("No package loaded") },
 		),
-		g.Button("Load package").OnClick(LoadPackage),
+		g.Button("Load package").OnClick(func() { LoadPackage(c) }),
 		g.Separator(),
 
 		g.Label("Other").Font(largerFont),
@@ -212,7 +210,7 @@ func GeneralTab() []g.Widget {
 	}
 }
 
-func LoadPackage() {
+func LoadPackage(c types.Config) {
 	filename, err := dialog.File().Filter("Edgeware package (.zip)", "zip").Load()
 
 	if err != nil && err != dialog.Cancelled {
@@ -223,7 +221,7 @@ func LoadPackage() {
 	}
 }
 
-func SaveAndExit() {
+func SaveAndExit(c types.Config) {
 	fmt.Println("TODO: Shell out")
 	SaveConfig(c)
 	os.Exit(0)

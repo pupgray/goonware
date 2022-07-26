@@ -20,7 +20,7 @@ func Expect(s string, err error) string {
 	return s
 }
 
-func NewOrLoadConfig() types.Config {
+func NewOrLoadConfig() (types.Config, error) {
 	if _, err := os.Stat(configFileLocation); errors.Is(err, os.ErrNotExist) {
 		_ = os.MkdirAll(packageExtractDirectory, os.ModePerm)
 
@@ -63,39 +63,37 @@ func NewOrLoadConfig() types.Config {
 			// Other
 			StartOnBoot: false,
 			RunOnExit: false,
-		}
+		}, nil
 	}
 
 	return LoadConfig()
 }
 
-func SaveConfig(c types.Config) {
+func SaveConfig(c types.Config) error {
 	structBytes, err := json.Marshal(c)
 	if err != nil {
-		// Todo: Handle better
-		panic(err)
+		return err
 	}
 
 	err = os.WriteFile(configFileLocation, structBytes, 0644)
 	if err != nil {
-		// Todo: Handle better
-		panic(err)
+		return err
 	}
+
+	return nil
 }
 
-func LoadConfig() types.Config {
+func LoadConfig() (types.Config, error) {
 	structBytes, err := os.ReadFile(configFileLocation)
 	if err != nil {
-		// Todo: Handle better
-		panic(err)
+		return types.Config{}, err
 	}
 
 	var c types.Config
 	err = json.Unmarshal(structBytes, &c)
 	if err != nil {
-		// Todo: Handle better
-		panic(err)
+		return types.Config{}, err
 	}
 
-	return c
+	return c, nil
 }

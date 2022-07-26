@@ -47,27 +47,24 @@ type EdgewarePackage struct {
 	VideoFiles []string
 }
 
-func LoadEdgewarePackage(packagePath, packageExtractDirectory string) EdgewarePackage {
+func LoadEdgewarePackage(packagePath, packageExtractDirectory string) (EdgewarePackage, error) {
 	var pkg EdgewarePackage
 
 	_, err := os.Stat(packageExtractDirectory)
 	if err == nil {
 		err := os.RemoveAll(packageExtractDirectory)
 		if err != nil { 
-			// Todo: This better
-			panic(err)
+			return EdgewarePackage{}, err
 		}
 	} else if !os.IsNotExist(err) {
-		// Todo: This better
-		panic(err)
+		return EdgewarePackage{}, err
 	}
 
 	_ = os.Mkdir(packageExtractDirectory, os.ModePerm)
 
 	zipReader, err := zip.OpenReader(packagePath)
 	if err != nil {
-		// Todo: This better
-		panic(err)
+		return EdgewarePackage{}, err
 	}
 	defer zipReader.Close()
 
@@ -81,33 +78,33 @@ func LoadEdgewarePackage(packagePath, packageExtractDirectory string) EdgewarePa
 
 		dstFile, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
 		if err != nil {
-			// Todo: this better
-			panic(err)
+			return EdgewarePackage{}, err
 		}
 
 		defer dstFile.Close()
 
 		fileInArchive, err := f.Open()
 		if err != nil {
-			// Todo: this better
-			panic(err)
+			return EdgewarePackage{}, err
 		}
 
 		defer fileInArchive.Close()
 		
 		if _, err := io.Copy(dstFile, fileInArchive); err != nil {
-			// Todo: this better
-			panic(err)
+			return EdgewarePackage{}, err
 		}
 
 		if strings.HasSuffix(filePath, "web.json") {
-			pkg.Sites = ParseWebJson(filePath)
+			pkg.Sites, err = ParseWebJson(filePath)
+			if err != nil { return EdgewarePackage{}, err }
 		} else if strings.HasSuffix(filePath, "prompt.json") {
-			pkg.Prompts, pkg.MinSentences, pkg.MaxSentences = ParsePromptJson(filePath)
+			pkg.Prompts, pkg.MinSentences, pkg.MaxSentences, err = ParsePromptJson(filePath)
+			if err != nil { return EdgewarePackage{}, err }
 		} else if strings.HasSuffix(filePath, "captions.json") {
-			pkg.Captions = ParseCaptionsJson(filePath)
+			pkg.Captions, err = ParseCaptionsJson(filePath)
+			if err != nil { return EdgewarePackage{}, err }
 		} else if strings.HasSuffix(filePath, "wallpaper.png") {
-			pkg.Wallpaper = filePath;
+			pkg.Wallpaper = filePath
 		} else {
 			dir := path.Dir(filePath)
 
@@ -123,23 +120,21 @@ func LoadEdgewarePackage(packagePath, packageExtractDirectory string) EdgewarePa
 		}
 	}
 
-	return pkg
+	return pkg, nil
 }
 
-func ParseWebJson(filePath string) []Site {
+func ParseWebJson(filePath string) ([]Site, error) {
 	var sites []Site
 
 	webJsonBytes, err := os.ReadFile(filePath)
 	if err != nil {
-		// Todo: Handle better
-		panic(err)
+		return []Site{}, err
 	}
 
 	var raw map[string][]string
 	err = json.Unmarshal(webJsonBytes, &raw)
 	if err != nil {
-		// Todo: Handle better
-		panic(err)
+		return []Site{}, err
 	}
 
 	for i := 0; i < len(raw["urls"]); i++ {
@@ -149,43 +144,38 @@ func ParseWebJson(filePath string) []Site {
 		})
 	}
 
-	return sites
+	return sites, nil
 }
 
-func ParsePromptJson(filePath string) ([]PromptSet, int, int) {
+func ParsePromptJson(filePath string) ([]PromptSet, int, int, error) {
 	var promptsets []PromptSet
 	var min int
 	var max int
 
 	promptJsonBytes, err := os.ReadFile(filePath)
 	if err != nil {
-		// Todo: Handle better
-		panic(err)
+		return []PromptSet{}, 0, 0, err
 	}
 
 	var raw map[string]json.RawMessage
 	err = json.Unmarshal(promptJsonBytes, &raw)
 	if err != nil {
-		// Todo: Handle better
-		panic(err)
+		return []PromptSet{}, 0, 0, err
 	}
 
 	err = json.Unmarshal(raw["minLen"], &min)
 	if err != nil {
-		// Todo: Handle better
-		panic(err)
+		return []PromptSet{}, 0, 0, err
 	}
 	err = json.Unmarshal(raw["maxLen"], &max)
 	if err != nil {
-		// Todo: Handle better
-		panic(err)
+		return []PromptSet{}, 0, 0, err
 	}
 
 	var unmarshalledMoods []string
 	err = json.Unmarshal(raw["moods"], &unmarshalledMoods)
 	if err != nil {
-		// Todo: Handle better
-		panic(err)
+		return []PromptSet{}, 0, 0, err
 	}
 	
 	for i := 0; i < len(unmarshalledMoods); i++ {
@@ -194,15 +184,13 @@ func ParsePromptJson(filePath string) ([]PromptSet, int, int) {
 		var unmarshalledPrompts []string
 		err = json.Unmarshal(raw[moodName], &unmarshalledPrompts)
 		if err != nil {
-			// Todo: Handle better
-			panic(err)
+			return []PromptSet{}, 0, 0, err
 		}
 
 		var freqList []int32
 		err = json.Unmarshal(raw["freqList"], &freqList)
 		if err != nil {
-			// Todo: Handle better
-			panic(err)
+			return []PromptSet{}, 0, 0, err
 		}
 
 		promptsets = append(promptsets, PromptSet{
@@ -212,23 +200,21 @@ func ParsePromptJson(filePath string) ([]PromptSet, int, int) {
 		})
 	}
 
-	return promptsets, min, max
+	return promptsets, min, max, nil
 }
 
-func ParseCaptionsJson(filePath string) []CaptionSet {
+func ParseCaptionsJson(filePath string) ([]CaptionSet, error) {
 	var captionsets []CaptionSet
 
 	captionJsonBytes, err := os.ReadFile(filePath)
 	if err != nil {
-		// Todo: Handle better
-		panic(err)
+		return []CaptionSet{}, err
 	}
 
 	var raw map[string][]string
 	err = json.Unmarshal(captionJsonBytes, &raw)
 	if err != nil {
-		// Todo: Handle better
-		panic(err)
+		return []CaptionSet{}, err
 	}
 
 	for _, prefix := range raw["prefix"] {
@@ -238,11 +224,11 @@ func ParseCaptionsJson(filePath string) []CaptionSet {
 		})
 	}
 
-	return captionsets
+	return captionsets, nil
 }
 
-func ExtractString(obj json.RawMessage) string {
+func ExtractString(obj json.RawMessage) (string, error) {
 	var s string
-	json.Unmarshal(obj, &s)
-	return s
+	err := json.Unmarshal(obj, &s)
+	return s, err
 }

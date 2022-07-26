@@ -14,10 +14,13 @@ func main() {
 	flag.Parse()
 
 	if *enterDaemon {
-		c := configurator.NewOrLoadConfig()
-		pkg := types.LoadEdgewarePackage(c.LoadedPackage, c.WorkingDirectory)
+		c, err := configurator.NewOrLoadConfig()
+		if err != nil { panic(err) }
+		pkg, err := types.LoadEdgewarePackage(c.LoadedPackage, c.WorkingDirectory)
+		if err != nil { panic(err) }
+
 		daemon.Tick(c, pkg)
 	} else {
-		configurator.ConfiguratorUI()
+		panic(configurator.ConfiguratorUI())
 	}
 }
