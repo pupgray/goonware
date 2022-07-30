@@ -1,4 +1,4 @@
-package configurator
+package Goonware
 
 import (
 	g "github.com/AllenDang/giu"

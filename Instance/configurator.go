@@ -1,21 +1,27 @@
-package configurator
+package Goonware
 
 import (
 	types "goonware/types"
 
-	"os"
-	"errors"
 	"encoding/json"
+	"errors"
+	"os"
 
 	g "github.com/AllenDang/giu"
 )
 
-var workingDirectory   = Expect(os.UserConfigDir()) + "/goonware"
-var packageExtractDirectory = workingDirectory + "/package"
-var configFileLocation = workingDirectory + "/goonware.json"
+type Configurator struct {
+	parentInstance *Instance
+}
 
-func ConfiguratorUI() error {
-	c, err := NewOrLoadConfig()
+func NewConfigurator(parentInstance *Instance) Configurator {
+	return Configurator{
+		parentInstance: parentInstance,
+	}
+}
+
+func (config Configurator) Launch() error {
+	c, err := config.NewOrLoadConfig()
 	if err != nil {
 		return err
 	}
@@ -33,17 +39,17 @@ func ConfiguratorUI() error {
 			g.Row(
 				g.Button("Load package").OnClick(func() { LoadPackage(&c) }),
 				g.Condition(len(c.LoadedPackage) != 0,
-					g.Layout{ g.Label("(Using package " + c.LoadedPackage + ")")},
-					g.Layout{ g.Label("(No package loaded)") },
+					g.Layout{g.Label("(Using package " + c.LoadedPackage + ")")},
+					g.Layout{g.Label("(No package loaded)")},
 				),
 			),
 
 			g.Row(
-				g.Button("Save").OnClick(func() { SaveConfig(&c) }),
-				g.Button("Save and Exit").OnClick(func() { SaveAndExit(&c) }),
+				g.Button("Save").OnClick(func() { config.SaveConfig(&c) }),
+				g.Button("Save and Exit").OnClick(func() { SaveAndExit(config, &c) }),
 				g.Row(
 					g.Checkbox("Launch on startup", &c.StartOnBoot),
-					g.Tooltip("Silently start Goonware every time your computer starts, executing" +
+					g.Tooltip("Silently start Goonware every time your computer starts, executing"+
 						" whatever package was running last time."),
 					g.Checkbox("Run Goonware on save and exit", &c.RunOnExit),
 				),
@@ -53,9 +59,9 @@ func ConfiguratorUI() error {
 				g.Label("Mode"),
 				g.RadioButton("Normal", c.Mode == 0).OnChange(func() { c.Mode = 0 }),
 				g.Tooltip("As soon as Goonware starts, it will start running payloads."),
-	
+
 				g.RadioButton("Hibernate", c.Mode == 1).OnChange(func() { c.Mode = 1 }),
-				g.Tooltip("Goonware will wait a random amount of time (within given limits) before" +
+				g.Tooltip("Goonware will wait a random amount of time (within given limits) before"+
 					" spamming payloads, then stop and start waiting again."),
 
 				ConditionOrNothing(c.Mode == 1, g.Layout{
@@ -73,71 +79,71 @@ func ConfiguratorUI() error {
 	return nil
 }
 
-func NewOrLoadConfig() (types.Config, error) {
-	if _, err := os.Stat(configFileLocation); errors.Is(err, os.ErrNotExist) {
-		_ = os.MkdirAll(packageExtractDirectory, os.ModePerm)
+func (config Configurator) NewOrLoadConfig() (types.Config, error) {
+	if _, err := os.Stat(config.parentInstance.ConfigFilePath); errors.Is(err, os.ErrNotExist) {
+		_ = os.MkdirAll(config.parentInstance.PackageExtractDirectoryPath, os.ModePerm)
 
 		return types.Config{
-			WorkingDirectory: workingDirectory,
+			WorkingDirectory: config.parentInstance.WorkingDirectoryPath,
 			// General
-			Mode: 0,
+			Mode:                    0,
 			HibernateMinWaitMinutes: 120,
 			HibernateMaxWaitMinutes: 3600,
 			HibernateActivityLength: 20,
-			StartOnBoot: false,
-			RunOnExit: false,
-			LoadedPackage: "",
-			LoadedPackageData: nil,
+			StartOnBoot:             false,
+			RunOnExit:               false,
+			LoadedPackage:           "",
+			LoadedPackageData:       nil,
 
 			// Annoyances
-			Annoyances: true,
-			TimerDelay: 10,
+			Annoyances:      true,
+			TimerDelay:      10,
 			AnnoyancePopups: true,
 
-			PopupChance: 50,
-			PopupOpacity: 85,
-			PopupDenialMode: false,
-			PopupDenialChance: 50,
-			PopupMitosis: true,
+			PopupChance:          50,
+			PopupOpacity:         85,
+			PopupDenialMode:      false,
+			PopupDenialChance:    50,
+			PopupMitosis:         true,
 			PopupMitosisStrength: 4,
-			PopupTimeout: false,
-			PopupTimeoutDelay: 30,
+			PopupTimeout:         false,
+			PopupTimeoutDelay:    30,
 
 			AnnoyanceVideos: true,
-			VideoChance: 25,
-			VideoVolume: 25,
+			VideoChance:     25,
+			VideoVolume:     25,
 
-			AnnoyancePrompts: true,
-			PromptChance: 25,
+			AnnoyancePrompts:  true,
+			PromptChance:      25,
 			MaxMistakesToggle: true,
-			MaxMistakes: 1,
+			MaxMistakes:       1,
 
 			AnnoyanceAudio: true,
-			AudioChance: 25,
-			AudioVolume: 25,
-			
+			AudioChance:    25,
+			AudioVolume:    25,
+
 			// Drive Filler
-			DriveFiller: false,
-			DriveFillerDelay: 10,
-			DriveFillerBase: Expect(os.UserHomeDir()),
-			DriveFillerTags: []string{"feral+paws", "feral+rimming"},
-			DriveFillerImageSource: 1,
-			DriveFillerImageUseTags: true,
-			DriveFillerDownloadMinimumScoreToggle: false,
+			DriveFiller:                              false,
+			DriveFillerDelay:                         10,
+			DriveFillerBase:                          Expect(os.UserHomeDir()),
+			DriveFillerTags:                          []string{"feral+paws", "feral+rimming"},
+			DriveFillerImageSource:                   1,
+			DriveFillerImageUseTags:                  true,
+			DriveFillerDownloadMinimumScoreToggle:    false,
 			DriveFillerDownloadMinimumScoreThreshold: 0,
 		}, nil
 	}
 
-	return LoadConfig()
+	return config.LoadConfig()
 }
 
-func SaveConfig(c *types.Config) error {
+func (config Configurator) SaveConfig(c *types.Config) error {
 	structBytes, err := json.Marshal(*c)
 	if err != nil {
 		return err
 	}
 
-	err = os.WriteFile(configFileLocation, structBytes, 0644)
+	err = os.WriteFile(config.parentInstance.ConfigFilePath, structBytes, 0644)
 	if err != nil {
 		return err
 	}
@@ -145,8 +151,8 @@ func SaveConfig(c *types.Config) error {
 	return nil
 }
 
-func LoadConfig() (types.Config, error) {
-	structBytes, err := os.ReadFile(configFileLocation)
+func (config Configurator) LoadConfig() (types.Config, error) {
+	structBytes, err := os.ReadFile(config.parentInstance.ConfigFilePath)
 	if err != nil {
 		return types.Config{}, err
 	}

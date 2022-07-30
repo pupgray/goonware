@@ -1,4 +1,4 @@
-package configurator
+package Goonware
 
 import (
 	"fmt"
@@ -11,15 +11,15 @@ func FormatMillisecondSlider(value int32) string {
 		return fmt.Sprintf("%d milliseconds", value)
 	}
 
-	if value % 1000 == 0 { 
+	if value%1000 == 0 {
 		if value == 1000 {
 			return "1 second"
 		}
 
-		return fmt.Sprintf("%d seconds", value / 1000)
+		return fmt.Sprintf("%d seconds", value/1000)
 	}
 
-	return fmt.Sprintf("%d seconds %d milliseconds", value / 1000, value % 1000)
+	return fmt.Sprintf("%d seconds %d milliseconds", value/1000, value%1000)
 }
 
 func FormatSecondSlider(value int32) string {
@@ -31,19 +31,19 @@ func FormatSecondSlider(value int32) string {
 		return fmt.Sprintf("%d seconds", value)
 	}
 
-	if value % 60 == 0 {
+	if value%60 == 0 {
 		if value == 60 {
 			return fmt.Sprintf("1 minute")
 		}
 
-		return fmt.Sprintf("%d minutes", value / 60)
+		return fmt.Sprintf("%d minutes", value/60)
 	}
 
 	if value < 120 {
-		return fmt.Sprintf("1 minute %d seconds", value % 60)
+		return fmt.Sprintf("1 minute %d seconds", value%60)
 	}
 
-	return fmt.Sprintf("%d minutes %d seconds", value / 60, value % 60)
+	return fmt.Sprintf("%d minutes %d seconds", value/60, value%60)
 }
 
 func FormatMinuteSlider(value int32) string {
@@ -55,19 +55,19 @@ func FormatMinuteSlider(value int32) string {
 		return fmt.Sprintf("%d minutes", value)
 	}
 
-	if value % 60 == 0 {
+	if value%60 == 0 {
 		if value == 60 {
 			return fmt.Sprintf("1 hour")
 		}
 
-		return fmt.Sprintf("%d hours", value / 60)
+		return fmt.Sprintf("%d hours", value/60)
 	}
 
 	if value < 120 {
-		return fmt.Sprintf("1 hour %d minutes", value % 60)
+		return fmt.Sprintf("1 hour %d minutes", value%60)
 	}
 
-	return fmt.Sprintf("%d hours, %d minutes", value / 60, value % 60)
+	return fmt.Sprintf("%d hours, %d minutes", value/60, value%60)
 }
 
 func FormatPercentSlider(value int32) string {
@@ -81,7 +81,7 @@ func FormatPercentSlider(value int32) string {
 }
 
 func ConditionOrNothing(condition bool, layout g.Layout) g.Layout {
-	if condition { 
+	if condition {
 		return layout
 	}
 
@@ -89,7 +89,7 @@ func ConditionOrNothing(condition bool, layout g.Layout) g.Layout {
 }
 
 func LabelSliderTooltip(label string, value *int32, min, max int32, size float32, tooltip string,
-		format func(int32) string) g.Layout {
+	format func(int32) string) g.Layout {
 	return g.Layout{
 		g.Label(label),
 		g.SliderInt(value, min, max).Format(format(*value)).Size(size),

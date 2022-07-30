@@ -1,4 +1,4 @@
-package configurator
+package Goonware
 
 import (
 	"fmt"
@@ -38,7 +38,7 @@ func DriveFillterTab(c *types.Config) []g.Widget {
 			),
 			g.Row(
 				g.Button("Select base").OnClick(func() { SelectBase(c) }),
-				g.Label("(" + c.DriveFillerBase + ")"),
+				g.Label("("+c.DriveFillerBase+")"),
 			),
 			StandardSeparation(),
 
@@ -67,9 +67,9 @@ func DriveFillterTab(c *types.Config) []g.Widget {
 					g.RadioButton("Anything", !c.DriveFillerImageUseTags).
 						OnChange(func() { c.DriveFillerImageUseTags = false }),
 					g.RadioButton("Specific Tags", c.DriveFillerImageUseTags).
-						OnChange(func() { c.DriveFillerImageUseTags = true}),
+						OnChange(func() { c.DriveFillerImageUseTags = true }),
 				),
-				g.Child().Layout(TagsLayout(c)).Size(300, 300),		
+				g.Child().Layout(TagsLayout(c)).Size(300, 300),
 				g.Row(
 					g.Button("+").OnClick(func() { g.OpenPopup("Add New Tag") }),
 					g.Button("-").OnClick(func() {
